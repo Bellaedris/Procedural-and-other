@@ -14,8 +14,8 @@ public class MapGenerator : MonoBehaviour
     public float persistance = 1f;
     public float lacunarity = 1f;
     public float redistribution = 1f;
-    public float warpingX = 0f;
-    public float warpingY = 0f;
+    public float warping1 = 0f;
+    public float warping2 = 0f;
     public int seed = 1;
     [Tooltip("Proportion of water over land of the island")]
     [Range(0,1)]
@@ -29,7 +29,7 @@ public class MapGenerator : MonoBehaviour
 
     public void GenerateMap() {
         float[] noisemap = NoiseGenerator.GenerateNoise(width, height, octaves, persistance, lacunarity, scale, offset, redistribution, seed, 
-                                                        islandMode, waterCoefficient, warpingX, warpingY);
+                                                        islandMode, waterCoefficient, warping1, warping2);
         
         Texture2D texture = TextureGenerator.GenerateTexture(noisemap, width, height);
 
@@ -50,8 +50,8 @@ public class MapGenerator : MonoBehaviour
 
         redistribution = redistribution < 1 ? 1 : redistribution;
 
-        warpingX = warpingX < 0 ? 0 : warpingX;
+        warping1 = warping1 < 0 ? 0 : warping1;
 
-        warpingY = warpingY < 0 ? 0 : warpingY;
+        warping2 = warping2 < 0 ? 0 : warping2;
     }
 }
