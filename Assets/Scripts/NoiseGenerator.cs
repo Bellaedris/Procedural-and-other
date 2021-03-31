@@ -8,11 +8,6 @@ public static class NoiseGenerator
                                         bool islandMode, float waterCoefficient, float warping1, float warping2
     ) {
         float[] results = new float[width * height]; 
-        float[] warpX = GenerateWarpNoise(width, height);
-        float[] warpY = GenerateWarpNoise(width, height);
-
-        float[] warpXX = GenerateWarpNoise(width, height);
-        float[] warpYY = GenerateWarpNoise(width, height);
 
         //seed to have the possibility to recreate a noisemap
         System.Random randomGenerator = new System.Random(seed);

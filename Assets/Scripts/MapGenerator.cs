@@ -6,6 +6,7 @@ public class MapGenerator : MonoBehaviour
 {
 
     #region variables
+    [Header("Generator parameters")]
     public int width = 100;
     public int height = 100;
     public float scale = 1.0f;
@@ -22,7 +23,14 @@ public class MapGenerator : MonoBehaviour
     public float waterCoefficient;
     [Tooltip("Generate island-ish shapes")]
     public bool islandMode;
+    [Space(10)]
+    [Header("Biomes and colors")]
+    public TerrainType[] biomes;
+    [Space(10)]
+    [Header("Misc")]
+    public bool colorMap;
     public bool autoUpdate;
+    public bool demo;
     public Vector2 offset;
     public Renderer renderObject;
     #endregion
@@ -31,8 +39,17 @@ public class MapGenerator : MonoBehaviour
         float[] noisemap = NoiseGenerator.GenerateNoise(width, height, octaves, persistance, lacunarity, scale, offset, redistribution, seed, 
                                                         islandMode, waterCoefficient, warping1, warping2);
         
-        Texture2D texture = TextureGenerator.GenerateTexture(noisemap, width, height);
+        if (demo) {
+            
+        }
 
+        Texture2D texture;
+        if (colorMap) {
+            texture = TextureGenerator.GenerateColorTexture(noisemap, width, height, biomes);
+        } else {
+            texture = TextureGenerator.GenerateTexture(noisemap, width, height);
+        }
+        
         renderObject.sharedMaterial.mainTexture = texture;
     }
 
@@ -53,5 +70,20 @@ public class MapGenerator : MonoBehaviour
         warping1 = warping1 < 0 ? 0 : warping1;
 
         warping2 = warping2 < 0 ? 0 : warping2;
+    }
+
+    private void Update() {
+        if (demo) {
+            offset.x += .1f * Time.deltaTime;
+            offset.y += -0.05f * Time.deltaTime;
+            GenerateMap();
+        }
+    }
+
+    [System.Serializable]
+    public struct TerrainType {
+        public string name;
+        public float heightThreshold;
+        public Color color;
     }
 }
