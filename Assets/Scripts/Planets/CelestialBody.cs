@@ -9,31 +9,42 @@ public class CelestialBody : MonoBehaviour
     public Vector3 initialVelocity = new Vector3(0, 0, 0);
     public bool staticStar;
     public Color starColor;
+    public string name;
 
     private Vector3 velocity;
     private static List<CelestialBody> bodies;
     private Rigidbody rb;
+    private UIManager uiManager;
     #endregion
 
     private void Start() {
         velocity = initialVelocity;
         rb = GetComponent<Rigidbody>();
+        uiManager = FindObjectOfType<UIManager>();
 
-        GetComponent<MeshRenderer>().sharedMaterial.SetColor("_Color", starColor);
+        updateColor();
     }
 
     private void FixedUpdate() {
+        if (!uiManager.simulate) return;
         foreach(CelestialBody body in bodies) {
             if (body != this) {
                 UpdateAceleration(body);
             }
         }
         if (!staticStar) UpdatePosition();
+        updateColor();
     }
 
     private void OnEnable() {
         if (bodies == null) bodies = new List<CelestialBody>();
         bodies.Add(this);
+    }
+    private void OnMouseUp() {
+        uiManager.selected = this;
+        uiManager.planetName.text = name;
+        uiManager.posX.value = transform.position.x;
+        uiManager.posZ.value = transform.position.z;
     }
 
     //update the acceleration of the current body based on the forces exerted by the other bodies
@@ -52,4 +63,7 @@ public class CelestialBody : MonoBehaviour
         rb.MovePosition(rb.position + velocity * UniverseRules.timeStep);
     }
 
+    public void updateColor() {
+        GetComponent<MeshRenderer>().sharedMaterial.SetColor("_Color", starColor);
+    }
 }

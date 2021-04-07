@@ -14,9 +14,9 @@ public class OrbitDisplay : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!Application.isPlaying) {
+        //if (!Application.isPlaying) {
             DrawOrbits();
-        }
+        //}
     }
 
     void DrawOrbits() {
