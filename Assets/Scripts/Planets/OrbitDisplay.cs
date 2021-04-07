@@ -9,14 +9,20 @@ public class OrbitDisplay : MonoBehaviour
     #region variables
     public int nbIter = 100;
     public bool thickLines;
+    
+    private UIManager manager;
     #endregion
+
+    private void Start() {
+        manager = FindObjectOfType<UIManager>();
+    }
 
     // Update is called once per frame
     void Update()
     {
-        //if (!Application.isPlaying) {
+        if (!manager.simulate) {
             DrawOrbits();
-        //}
+        }
     }
 
     void DrawOrbits() {

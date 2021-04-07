@@ -43,8 +43,12 @@ public class CelestialBody : MonoBehaviour
     private void OnMouseUp() {
         uiManager.selected = this;
         uiManager.planetName.text = name;
+        uiManager.staticStar.isOn = staticStar;
+        uiManager.mass.value = mass;
         uiManager.posX.value = transform.position.x;
         uiManager.posZ.value = transform.position.z;
+        uiManager.velocityX.value = initialVelocity.x;
+        uiManager.velocityZ.value = initialVelocity.z;
     }
 
     //update the acceleration of the current body based on the forces exerted by the other bodies
