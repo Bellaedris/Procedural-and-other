@@ -69,4 +69,8 @@ public class CelestialBody : MonoBehaviour
     public void updateColor() {
         GetComponent<MeshRenderer>().sharedMaterial.SetColor("_BaseColor", starColor);
     }
+
+    public void InitializeVelocity() {
+        velocity = initialVelocity;
+    }
 }

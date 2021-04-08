@@ -20,6 +20,7 @@ public class UIManager : MonoBehaviour
     public GameObject colorPreview;
     public GameObject celestialBodyPrefab;
     public FlexibleColorPicker cp;
+    public GameObject planetEdit;
 
     private CameraController camera;
     #endregion
@@ -57,6 +58,7 @@ public class UIManager : MonoBehaviour
             LineRenderer lr = body.GetComponent<LineRenderer>();
             lr.enabled = false;
             body.transform.position = body.initialPosition;
+            body.InitializeVelocity();
         }
     }
 
@@ -99,6 +101,7 @@ public class UIManager : MonoBehaviour
 
     public void SetSelected(CelestialBody selected) {
         this.selected = selected;
+        planetEdit.SetActive(true);
         planetName.text = selected.name;
         staticStar.isOn = selected.staticStar;
         mass.value = selected.mass;
