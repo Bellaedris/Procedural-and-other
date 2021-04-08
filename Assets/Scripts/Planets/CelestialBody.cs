@@ -10,6 +10,7 @@ public class CelestialBody : MonoBehaviour
     public bool staticStar;
     public Color starColor = Color.gray;
     public string name = "Astre";
+    public Vector3 initialPosition;
 
     private Vector3 velocity;
     private static List<CelestialBody> bodies;
@@ -23,6 +24,8 @@ public class CelestialBody : MonoBehaviour
         uiManager = FindObjectOfType<UIManager>();
 
         updateColor();
+
+        initialPosition = transform.position;
     }
 
     private void FixedUpdate() {
@@ -40,7 +43,7 @@ public class CelestialBody : MonoBehaviour
         if (bodies == null) bodies = new List<CelestialBody>();
         bodies.Add(this);
     }
-    
+
     private void OnMouseUp() {
         uiManager.selected = this;
         uiManager.planetName.text = name;

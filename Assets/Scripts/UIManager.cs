@@ -40,10 +40,12 @@ public class UIManager : MonoBehaviour
 
     public void UpdateX(float newX) {
         selected.transform.position = new Vector3(newX, 0, selected.transform.position.z);
+        selected.initialPosition = selected.transform.position;
     }
 
     public void UpdateZ(float newZ) {
         selected.transform.position = new Vector3(selected.transform.position.x, 0, newZ);
+        selected.initialPosition = selected.transform.position;
     }
 
     public void UpdateStaticStar(bool val) {
@@ -56,6 +58,7 @@ public class UIManager : MonoBehaviour
         foreach(CelestialBody body in bodies) {
             LineRenderer lr = body.GetComponent<LineRenderer>();
             lr.enabled = false;
+            body.transform.position = body.initialPosition;
         }
     }
 
