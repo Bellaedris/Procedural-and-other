@@ -5,11 +5,11 @@ using UnityEngine;
 public class CelestialBody : MonoBehaviour
 {
     #region variables
-    public float mass;
+    public float mass = 1f;
     public Vector3 initialVelocity = new Vector3(0, 0, 0);
     public bool staticStar;
-    public Color starColor;
-    public string name;
+    public Color starColor = Color.gray;
+    public string name = "Astre";
 
     private Vector3 velocity;
     private static List<CelestialBody> bodies;
@@ -40,6 +40,7 @@ public class CelestialBody : MonoBehaviour
         if (bodies == null) bodies = new List<CelestialBody>();
         bodies.Add(this);
     }
+    
     private void OnMouseUp() {
         uiManager.selected = this;
         uiManager.planetName.text = name;

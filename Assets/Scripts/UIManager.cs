@@ -17,6 +17,7 @@ public class UIManager : MonoBehaviour
     public Slider velocityX;
     public Slider velocityZ;
     public Toggle staticStar;
+    public GameObject celestialBodyPrefab;
 
     private FlexibleColorPicker cp;
     private CameraController camera;
@@ -84,5 +85,9 @@ public class UIManager : MonoBehaviour
         } else {
             camera.following = null;
         }
+    }
+
+    public void NewStar() {
+        Instantiate(celestialBodyPrefab, celestialBodyPrefab.transform.position, celestialBodyPrefab.transform.rotation);
     }
 }

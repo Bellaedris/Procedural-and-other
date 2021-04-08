@@ -30,7 +30,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8725357582286289324}
   m_LocalRotation: {x: -0, y: -0.70710677, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 9.6, y: 0, z: 0}
+  m_LocalPosition: {x: 20, y: 0, z: 10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -126,10 +126,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c66c0c11604a8e848a797fb2feb2ad78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mass: 1000
-  initialVelocity: {x: 0, y: 0, z: 100}
-  staticStar: 1
+  mass: 1
+  initialVelocity: {x: 0, y: 0, z: 0}
+  staticStar: 0
   starColor: {r: 0, g: 0, b: 0, a: 0}
+  name: Astre inconnu
 --- !u!120 &2206202892557244806
 LineRenderer:
   m_ObjectHideFlags: 0
