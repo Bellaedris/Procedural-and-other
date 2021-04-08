@@ -19,16 +19,19 @@ public class CelestialBody : MonoBehaviour
     #endregion
 
     private void Start() {
+        MeshRenderer rend = GetComponent<MeshRenderer>();
+        rend.sharedMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        updateColor();
+
         velocity = initialVelocity;
         rb = GetComponent<Rigidbody>();
         uiManager = FindObjectOfType<UIManager>();
-
-        updateColor();
 
         initialPosition = transform.position;
     }
 
     private void FixedUpdate() {
+        updateColor();
         if (!uiManager.simulate) return;
         foreach(CelestialBody body in bodies) {
             if (body != this) {
@@ -36,7 +39,6 @@ public class CelestialBody : MonoBehaviour
             }
         }
         if (!staticStar) UpdatePosition();
-        updateColor();
     }
 
     private void OnEnable() {
@@ -45,14 +47,7 @@ public class CelestialBody : MonoBehaviour
     }
 
     private void OnMouseUp() {
-        uiManager.selected = this;
-        uiManager.planetName.text = name;
-        uiManager.staticStar.isOn = staticStar;
-        uiManager.mass.value = mass;
-        uiManager.posX.value = transform.position.x;
-        uiManager.posZ.value = transform.position.z;
-        uiManager.velocityX.value = initialVelocity.x;
-        uiManager.velocityZ.value = initialVelocity.z;
+        uiManager.SetSelected(this);
     }
 
     //update the acceleration of the current body based on the forces exerted by the other bodies
@@ -72,6 +67,6 @@ public class CelestialBody : MonoBehaviour
     }
 
     public void updateColor() {
-        GetComponent<MeshRenderer>().sharedMaterial.SetColor("_Color", starColor);
+        GetComponent<MeshRenderer>().sharedMaterial.SetColor("_BaseColor", starColor);
     }
 }

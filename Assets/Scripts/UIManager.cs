@@ -17,25 +17,23 @@ public class UIManager : MonoBehaviour
     public Slider velocityX;
     public Slider velocityZ;
     public Toggle staticStar;
+    public GameObject colorPreview;
     public GameObject celestialBodyPrefab;
+    public FlexibleColorPicker cp;
 
-    private FlexibleColorPicker cp;
     private CameraController camera;
     #endregion
 
     // Start is called before the first frame update
     void Start()
     {
-        cp = FindObjectOfType<FlexibleColorPicker>();
         camera = FindObjectOfType<CameraController>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (selected && cp) {
-            UpdateColor();
-        }
+        
     }
 
     public void UpdateX(float newX) {
@@ -64,6 +62,7 @@ public class UIManager : MonoBehaviour
 
     public void UpdateColor() {
         selected.starColor = cp.color;
+        colorPreview.GetComponent<Image>().color = cp.color;
     }
 
     public void UpdateName() {
@@ -96,5 +95,18 @@ public class UIManager : MonoBehaviour
             spawnPos.x += 1;
         }
         Instantiate(celestialBodyPrefab, spawnPos, celestialBodyPrefab.transform.rotation);
+    }
+
+    public void SetSelected(CelestialBody selected) {
+        this.selected = selected;
+        planetName.text = selected.name;
+        staticStar.isOn = selected.staticStar;
+        mass.value = selected.mass;
+        posX.value = selected.transform.position.x;
+        posZ.value = selected.transform.position.z;
+        velocityX.value = selected.initialVelocity.x;
+        velocityZ.value = selected.initialVelocity.z;
+        colorPreview.GetComponent<Image>().color = selected.starColor;
+        if (cp) cp.gameObject.SetActive(false);
     }
 }
