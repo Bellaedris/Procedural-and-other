@@ -91,6 +91,10 @@ public class UIManager : MonoBehaviour
     }
 
     public void NewStar() {
-        Instantiate(celestialBodyPrefab, celestialBodyPrefab.transform.position, celestialBodyPrefab.transform.rotation);
+        Vector3 spawnPos = celestialBodyPrefab.transform.position;
+        while (Physics.OverlapSphere(spawnPos, 1f).Length > 0) {
+            spawnPos.x += 1;
+        }
+        Instantiate(celestialBodyPrefab, spawnPos, celestialBodyPrefab.transform.rotation);
     }
 }
