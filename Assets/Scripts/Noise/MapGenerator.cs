@@ -17,6 +17,8 @@ public class MapGenerator : MonoBehaviour
     public float redistribution = 1f;
     public float warping1 = 0f;
     public float warping2 = 0f;
+    public int minHeight = 0;
+    public int maxHeight = 1;
     public int seed = 1;
     [Tooltip("Proportion of water over land of the island")]
     [Range(0,1)]
@@ -29,14 +31,16 @@ public class MapGenerator : MonoBehaviour
     [Space(10)]
     [Header("Misc")]
     public bool colorMap;
+    public bool generateMesh;
     public bool autoUpdate;
     public bool demo;
     public Vector2 offset;
     public Renderer renderObject;
+    public Mesh defaultMesh;
     #endregion
 
     public void GenerateMap() {
-        float[] noisemap = NoiseGenerator.GenerateNoise(width, height, octaves, persistance, lacunarity, scale, offset, redistribution, seed, 
+        float[,] noisemap = NoiseGenerator.GenerateNoise(width, height, octaves, persistance, lacunarity, scale, offset, redistribution, seed, 
                                                         islandMode, waterCoefficient, warping1, warping2);
         
         if (demo) {
@@ -49,7 +53,15 @@ public class MapGenerator : MonoBehaviour
         } else {
             texture = TextureGenerator.GenerateTexture(noisemap, width, height);
         }
-        
+
+        if (generateMesh) {
+            MeshFilter mesh = renderObject.GetComponent<MeshFilter>();
+            mesh.sharedMesh = MeshGenerator.GenerateMesh(noisemap, minHeight, maxHeight);
+        } else {
+            MeshFilter mesh = renderObject.GetComponent<MeshFilter>();
+            mesh.sharedMesh = defaultMesh;
+        }
+
         renderObject.sharedMaterial.mainTexture = texture;
     }
 

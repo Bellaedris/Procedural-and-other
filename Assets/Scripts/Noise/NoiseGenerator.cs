@@ -4,10 +4,10 @@ using UnityEngine;
 
 public static class NoiseGenerator
 {
-    public static float[] GenerateNoise(int width, int height, int octaves, float persistance, float lacunarity, float scale, Vector2 offset, float redistribution, int seed, 
+    public static float[,] GenerateNoise(int width, int height, int octaves, float persistance, float lacunarity, float scale, Vector2 offset, float redistribution, int seed, 
                                         bool islandMode, float waterCoefficient, float warping1, float warping2
     ) {
-        float[] results = new float[width * height]; 
+        float[,] results = new float[width, height]; 
 
         //seed to have the possibility to recreate a noisemap
         System.Random randomGenerator = new System.Random(seed);
@@ -49,7 +49,7 @@ public static class NoiseGenerator
                 float finalValue = Mathf.Pow(noiseValue, redistribution);
                 if (islandMode) 
                     finalValue = finalValue - Vector2.Distance(new Vector2(x, y), new Vector2(width / 2, height / 2)) / (width * waterCoefficient);
-                results[(int)y * width + (int)x] = finalValue;
+                results[(int) x, (int) y] = finalValue;
             }
         }
 
@@ -101,16 +101,20 @@ public static class NoiseGenerator
 
     //looks for the map an min value, then normalizes the values to 0 - 1
     //will modify the input heightmap
-    private static float[] NormalizeValues(float[] heightmap) {
+    private static float[,] NormalizeValues(float[,] heightmap) {
         float maxVal = 0;
 
-        for(int i = 0; i < heightmap.Length; i++) {
-            if (heightmap[i] > maxVal) maxVal = heightmap[i];
+        for(int y = 0; y < heightmap.GetLength(0); y++) {
+            for(int x = 0; x < heightmap.GetLength(1); x++) {
+                if (heightmap[x, y] > maxVal) maxVal = heightmap[x, y];
+            }
         }
         
         //normalize using the new max value
-        for(int i = 0; i < heightmap.Length; i++) {
-            heightmap[i] = heightmap[i] / maxVal;
+        for(int y = 0; y < heightmap.GetLength(0); y++) {
+            for(int x = 0; x < heightmap.GetLength(1); x++) {
+                heightmap[x, y] = heightmap[x, y] / maxVal;
+            }
         }
 
         return heightmap;

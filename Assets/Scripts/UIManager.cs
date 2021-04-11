@@ -112,4 +112,16 @@ public class UIManager : MonoBehaviour
         colorPreview.GetComponent<Image>().color = selected.starColor;
         if (cp) cp.gameObject.SetActive(false);
     }
+
+    public void HideWindow() {
+        if (cp) cp.gameObject.SetActive(false);
+        planetEdit.SetActive(false);
+    }
+
+    public void DeleteSelected() {
+        Destroy(selected.gameObject);
+        selected = null;
+        if (cp) cp.gameObject.SetActive(false);
+        planetEdit.SetActive(false);
+    }
 }

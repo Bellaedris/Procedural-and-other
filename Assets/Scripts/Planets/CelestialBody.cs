@@ -46,6 +46,10 @@ public class CelestialBody : MonoBehaviour
         bodies.Add(this);
     }
 
+    private void OnDestroy() {
+        bodies.Remove(this);
+    }
+
     private void OnMouseUp() {
         uiManager.SetSelected(this);
     }
