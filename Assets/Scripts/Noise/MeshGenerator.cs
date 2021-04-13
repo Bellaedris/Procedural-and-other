@@ -6,6 +6,7 @@ using UnityEditor;
 public static class MeshGenerator
 {
     public static Mesh GenerateMesh(float[,] noisemap, float minHeight, float maxHeight, int width, int height, float pointsPerUnit) {
+        float begin = Time.realtimeSinceStartup;
         Mesh mesh = new Mesh();
         mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         int nx = noisemap.GetLength(1);
@@ -55,7 +56,7 @@ public static class MeshGenerator
         mesh.triangles = triangles.ToArray();
         mesh.SetUVs(0, uvs);
         mesh.RecalculateNormals();
-
+        Debug.Log("time to generate mesh: " + (Time.realtimeSinceStartup - begin));
         return mesh;
     }
 

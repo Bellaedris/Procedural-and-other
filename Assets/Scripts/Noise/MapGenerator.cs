@@ -11,6 +11,7 @@ public class MapGenerator : MonoBehaviour
     public int height = 100;
     public int pointsPerUnit = 1;
     public float scale = 1.0f;
+    public Vector2 offset;
     public int octaves = 1;
     [Range(0,1)]
     public float persistance = 1f;
@@ -41,7 +42,6 @@ public class MapGenerator : MonoBehaviour
     public bool generateMesh;
     public bool autoUpdate;
     public bool demo;
-    public Vector2 offset;
     public Renderer renderObject;
     public Mesh defaultMesh;
     #endregion
@@ -84,7 +84,7 @@ public class MapGenerator : MonoBehaviour
 
         height = height < 1 ? 1 : height;
 
-        scale = scale < 1 ? 1 : scale;
+        scale = scale < 0 ? 0 : scale;
 
         octaves = octaves < 1 ? 1 : octaves;
 

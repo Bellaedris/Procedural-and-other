@@ -8,6 +8,7 @@ public static class NoiseGenerator
                                         bool islandMode, float waterCoefficient, float warping1, float warping2
     ) {
         float[,] results = new float[width, height]; 
+        float begin = Time.realtimeSinceStartup;
 
         //seed to have the possibility to recreate a noisemap
         System.Random randomGenerator = new System.Random(seed);
@@ -38,7 +39,7 @@ public static class NoiseGenerator
 
                     //second level of warping
                     Vector2 r = new Vector2(Mathf.PerlinNoise(xCoord + warping1 * q.x + 1.7f, yCoord + warping1 * q.y + 9.2f), 
-                                            Mathf.PerlinNoise(xCoord + warping1 * q.x + 5.2f, yCoord + + warping1 * q.y + 1.3f));
+                                            Mathf.PerlinNoise(xCoord + warping1 * q.x + 5.2f, yCoord + warping1 * q.y + 1.3f));
 
                     noiseValue += Mathf.PerlinNoise(xCoord + warping2 * r.x, yCoord + warping2 * r.y) * amplitude;
 
@@ -53,49 +54,8 @@ public static class NoiseGenerator
             }
         }
 
-        NormalizeValues(results);
-
-        return results;
-    }
-
-
-    private static float[] GenerateWarpNoise(int width, int height) {
-        float[] results = new float[width * height]; 
-        int octaves = 3;
-        float lacunarity = 2f;
-        float persistance = 0.4f;
-
-        //seed to have the possibility to recreate a noisemap
-        System.Random randomGenerator = new System.Random();
-        Vector2[] octaveOffsets = new Vector2[octaves];
-        for(int i = 0; i < octaves; i++)
-        {
-            float offsetX = randomGenerator.Next(-100000, 100000);
-            float offsetY = randomGenerator.Next(-100000, 100000);
-            octaveOffsets[i] = new Vector2(offsetX, offsetY);
-        }
-
-        for (float y = 0; y < width; y++) {
-            for (float x = 0; x < height; x++) {
-                // Initial values
-                float amplitude = 1;
-                float frequency = 1;
-                float noiseValue = 0;
-
-                // the FBM algorithm which overlay perlin noise
-                for (int i = 0; i < octaves; i++) {
-                    float xCoord = x / width * frequency + octaveOffsets[i].x;
-                    float yCoord = y / height * frequency + octaveOffsets[i].y;
-                    noiseValue += Mathf.PerlinNoise(xCoord, yCoord) * amplitude;
-
-                    frequency *= lacunarity;
-                    amplitude *= persistance;
-                }
-
-                results[(int)y * width + (int)x] = noiseValue * 2 - 1;
-            }
-        }
-
+        //NormalizeValues(results);
+        Debug.Log("time to generate heightmap: " + (Time.realtimeSinceStartup - begin));
         return results;
     }
 
