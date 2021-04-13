@@ -1,0 +1,2 @@
+//TODO permettre un meilleur controle sur la précision: actuellement si je donne une size de 100*100 alors on aura 2 triangles toutes les 1 unité. Ce qu'on veut c'est pouvoir choisir d'avoir une distance de 100*100 mais une taille réelle de 1000*1000 par ex
+//TODO pareil pour les couleurs ,il faut qu'il y ait plus de points pour plus de précision.
