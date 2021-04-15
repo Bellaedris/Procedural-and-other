@@ -4,6 +4,10 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
+//TODO move the planets by moving the mouse
+//TODO refine the initial velocity so it's more talking
+//TODO allow to zoom/dezoom/scale planets
+
 public class UIManager : MonoBehaviour
 {
 
@@ -56,7 +60,9 @@ public class UIManager : MonoBehaviour
         CelestialBody[] bodies = FindObjectsOfType<CelestialBody>();
         foreach(CelestialBody body in bodies) {
             LineRenderer lr = body.GetComponent<LineRenderer>();
+            TrailRenderer trail = body.GetComponent<TrailRenderer>();
             lr.enabled = false;
+            trail.enabled = simulate? true : false;
             body.transform.position = body.initialPosition;
             body.InitializeVelocity();
         }
@@ -123,5 +129,9 @@ public class UIManager : MonoBehaviour
         selected = null;
         if (cp) cp.gameObject.SetActive(false);
         planetEdit.SetActive(false);
+    }
+
+    public void Exit() {
+        Application.Quit();
     }
 }

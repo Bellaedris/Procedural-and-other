@@ -2,6 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//TODO tester une generation de normales a la main (terrain pas "lisse")
+//TODO tiling -> générer plusieurs tuiles de décor
+//TODO mettre en cache des données déjà calculées pour ne pas avoir à les recalculer (par exemple mettre en cache des chunks)
+
 public class MapGenerator : MonoBehaviour
 {
 

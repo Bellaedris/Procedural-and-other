@@ -4,6 +4,6 @@ using UnityEngine;
 
 public static class UniverseRules
 {
-    public const float GRAV_CONST = 6.67f;
-    public const float timeStep = 0.002f;
+    public const float GRAV_CONST = 0.0667f;
+    public const float timeStep = 0.02f;
 }

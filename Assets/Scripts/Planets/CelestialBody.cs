@@ -16,9 +16,10 @@ public class CelestialBody : MonoBehaviour
     private static List<CelestialBody> bodies;
     private Rigidbody rb;
     private UIManager uiManager;
+    private TrailRenderer trail;
     #endregion
 
-    private void Start() {
+    private void Awake() {
         MeshRenderer rend = GetComponent<MeshRenderer>();
         rend.sharedMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
         updateColor();
@@ -26,13 +27,17 @@ public class CelestialBody : MonoBehaviour
         velocity = initialVelocity;
         rb = GetComponent<Rigidbody>();
         uiManager = FindObjectOfType<UIManager>();
+        trail = GetComponent<TrailRenderer>();
 
         initialPosition = transform.position;
+        trail.sharedMaterial =  GetComponent<MeshRenderer>().sharedMaterial;
     }
 
     private void FixedUpdate() {
         updateColor();
-        if (!uiManager.simulate) return;
+        if (!uiManager.simulate) {
+            return;
+        }
         foreach(CelestialBody body in bodies) {
             if (body != this) {
                 UpdateAceleration(body);
