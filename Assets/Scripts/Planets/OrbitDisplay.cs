@@ -79,12 +79,12 @@ public class OrbitDisplay : MonoBehaviour
             if (i == j) {
                 continue;
             }
-            Vector3 direction = (vbodies[i].position - vbodies[j].position).normalized;
+            Vector3 direction = vbodies[i].position - vbodies[j].position;
             
             float sqrDst = direction.sqrMagnitude;
-            float force = UniverseRules.GRAV_CONST * ((vbodies[j].mass * vbodies[i].mass) / sqrDst);
+            float force = UniverseRules.GRAV_CONST * (vbodies[i].mass / sqrDst);
 
-            acceleration += (direction * force);
+            acceleration += (direction.normalized * force);
         }
         
         return acceleration;

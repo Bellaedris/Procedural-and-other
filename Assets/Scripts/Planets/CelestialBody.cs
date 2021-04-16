@@ -61,11 +61,11 @@ public class CelestialBody : MonoBehaviour
 
     //update the acceleration of the current body based on the forces exerted by the other bodies
     private void UpdateAceleration(CelestialBody other) {
-        Vector3 direction = (other.gameObject.transform.position - transform.position).normalized;
+        Vector3 direction = other.gameObject.transform.position - transform.position;
         float sqrDst = direction.sqrMagnitude;
 
-        float force = UniverseRules.GRAV_CONST * ((mass * other.mass) / sqrDst);
-        Vector3 acceleration = direction * force;
+        float force = UniverseRules.GRAV_CONST * (other.mass / sqrDst);
+        Vector3 acceleration = direction.normalized * force;
 
         velocity +=  acceleration * UniverseRules.timeStep;
     }
