@@ -12,11 +12,12 @@ public static class NoiseGenerator
 
         //seed to have the possibility to recreate a noisemap
         System.Random randomGenerator = new System.Random(seed);
+        //random offset
         Vector2[] octaveOffsets = new Vector2[octaves];
         for(int i = 0; i < octaves; i++)
         {
-            float offsetX = randomGenerator.Next(-100000, 100000) + offset.x;
-            float offsetY = randomGenerator.Next(-100000, 100000) + offset.y;
+            float offsetX = randomGenerator.Next(-1000, 1000) + offset.x;
+            float offsetY = randomGenerator.Next(-1000, 1000) + offset.y;
             octaveOffsets[i] = new Vector2(offsetX, offsetY);
         }
 
@@ -26,13 +27,13 @@ public static class NoiseGenerator
                 float amplitude = 1;
                 float frequency = 1;
                 float noiseValue = 0;
-                //float range = 0f;
 
-                // the FBM algorithm which overlay perlin noise
+                // the FBM algorithm to generate layers
                 for (int i = 0; i < octaves; i++) {
                     float xCoord = x / width * scale * frequency + octaveOffsets[i].x;
                     float yCoord = y / height * scale * frequency + octaveOffsets[i].y;
 
+                    //warping reusing code from https://www.iquilezles.org/www/articles/warp/warp.htm
                     //add 1st level of warping
                     Vector2 q = new Vector2(Mathf.PerlinNoise(xCoord, yCoord), 
                                             Mathf.PerlinNoise(xCoord + 5.2f, yCoord + 1.3f));
@@ -47,7 +48,9 @@ public static class NoiseGenerator
                     amplitude *= persistance;
                 }
 
+                //redistribution to allow creation of flat areas if need be
                 float finalValue = Mathf.Pow(noiseValue, redistribution);
+                //create an island shape by lowering noise value the further you are from the middle of the map
                 if (islandMode) 
                     finalValue = finalValue - Vector2.Distance(new Vector2(x, y), new Vector2(width / 2, height / 2)) / (width * waterCoefficient);
                 results[(int) x, (int) y] = finalValue;
