@@ -10,8 +10,9 @@ public class MapGenerator : MonoBehaviour
 
     #region variables
     [Header("Generator parameters")]
-    public int width = 100;
-    public int height = 100;
+    public int MapChunkSize = 241;
+    [Range(0,6)]
+    public int levelOfDetail;
     public int pointsPerUnit = 1;
     public float scale = 1.0f;
     public Vector2 offset;
@@ -22,7 +23,6 @@ public class MapGenerator : MonoBehaviour
     public float redistribution = 1f;
     public float warping1 = 0f;
     public float warping2 = 0f;
-    public float minHeight = 0;
     public float maxHeight = 1;
     public int seed = 1;
     [Tooltip("Proportion of water over land of the island")]
@@ -36,7 +36,9 @@ public class MapGenerator : MonoBehaviour
     [Space(10)]
     [Header("Water")]
     [Tooltip("Automatically fill the spaces below the lowest value with water")]
-    public bool addWater;
+    public bool flattenWaterLevel;
+    public AnimationCurve flatWaterlevel;
+    public bool addDynamicWater;
     public Material waterMaterial;
     public Renderer waterRenderer;
     [Space(10)]
@@ -50,21 +52,24 @@ public class MapGenerator : MonoBehaviour
     #endregion
 
     public void GenerateMap() {
-        float[,] noisemap = NoiseGenerator.GenerateNoise(width * pointsPerUnit, height * pointsPerUnit, octaves, persistance, lacunarity, scale, offset, redistribution, seed, 
+        float[,] noisemap = NoiseGenerator.GenerateNoise(MapChunkSize * pointsPerUnit, MapChunkSize * pointsPerUnit, octaves, persistance, lacunarity, scale, offset, redistribution, seed, 
                                                         islandMode, waterCoefficient, warping1, warping2);
 
         Texture2D texture;
         if (colorMap) {
-            texture = TextureGenerator.GenerateColorTexture(noisemap, width * pointsPerUnit, height * pointsPerUnit, biomes);
+            texture = TextureGenerator.GenerateColorTexture(noisemap, MapChunkSize * pointsPerUnit, MapChunkSize * pointsPerUnit, biomes);
         } else {
-            texture = TextureGenerator.GenerateTexture(noisemap, width * pointsPerUnit, height * pointsPerUnit);
+            texture = TextureGenerator.GenerateTexture(noisemap, MapChunkSize * pointsPerUnit, MapChunkSize * pointsPerUnit);
         }
 
         if (generateMesh) {
             MeshFilter mesh = renderObject.GetComponent<MeshFilter>();
-            mesh.sharedMesh = MeshGenerator.GenerateMesh(noisemap, minHeight, maxHeight, width, height, pointsPerUnit);
+            if (flattenWaterLevel)
+                mesh.sharedMesh = MeshGenerator.GenerateMesh(noisemap, maxHeight, MapChunkSize, MapChunkSize, pointsPerUnit, flatWaterlevel, levelOfDetail);
+            else
+                mesh.sharedMesh = MeshGenerator.GenerateMesh(noisemap, maxHeight, MapChunkSize, MapChunkSize, pointsPerUnit, AnimationCurve.Linear(0,1,0,1), levelOfDetail);
             MeshFilter waterMesh = waterRenderer.GetComponent<MeshFilter>();
-            waterMesh.sharedMesh = MeshGenerator.generateWater(width, height);
+            waterMesh.sharedMesh = MeshGenerator.generateWater(MapChunkSize, MapChunkSize);
 
             waterRenderer.transform.position = renderObject.transform.position + (Vector3.up * (maxHeight * biomes[0].heightThreshold));
         } else {
@@ -72,7 +77,7 @@ public class MapGenerator : MonoBehaviour
             mesh.sharedMesh = defaultMesh;
         }
 
-        if (addWater) {
+        if (addDynamicWater) {
             waterRenderer.gameObject.SetActive(true);
         } else {
             waterRenderer.gameObject.SetActive(false);
@@ -83,10 +88,6 @@ public class MapGenerator : MonoBehaviour
 
     //checks for incorrect inspector values
     private void OnValidate() {
-        width = width < 1 ? 1 : width;
-
-        height = height < 1 ? 1 : height;
-
         scale = scale < 0 ? 0 : scale;
 
         octaves = octaves < 1 ? 1 : octaves;
