@@ -21,8 +21,6 @@ public class MapGenerator : MonoBehaviour
     public float persistance = 1f;
     public float lacunarity = 1f;
     public float redistribution = 1f;
-    public float warping1 = 0f;
-    public float warping2 = 0f;
     public float maxHeight = 1;
     public int seed = 1;
     [Tooltip("Proportion of water over land of the island")]
@@ -53,7 +51,7 @@ public class MapGenerator : MonoBehaviour
 
     public void GenerateMap() {
         float[,] noisemap = NoiseGenerator.GenerateNoise(MapChunkSize * pointsPerUnit, MapChunkSize * pointsPerUnit, octaves, persistance, lacunarity, scale, offset, redistribution, seed, 
-                                                        islandMode, waterCoefficient, warping1, warping2);
+                                                        islandMode, waterCoefficient);
 
         Texture2D texture;
         if (colorMap) {
@@ -67,7 +65,7 @@ public class MapGenerator : MonoBehaviour
             if (flattenWaterLevel)
                 mesh.sharedMesh = MeshGenerator.GenerateMesh(noisemap, maxHeight, MapChunkSize, MapChunkSize, pointsPerUnit, flatWaterlevel, levelOfDetail);
             else
-                mesh.sharedMesh = MeshGenerator.GenerateMesh(noisemap, maxHeight, MapChunkSize, MapChunkSize, pointsPerUnit, AnimationCurve.Linear(0,1,0,1), levelOfDetail);
+                mesh.sharedMesh = MeshGenerator.GenerateMesh(noisemap, maxHeight, MapChunkSize, MapChunkSize, pointsPerUnit, AnimationCurve.Linear(0,0,1,1), levelOfDetail);
             MeshFilter waterMesh = waterRenderer.GetComponent<MeshFilter>();
             waterMesh.sharedMesh = MeshGenerator.generateWater(MapChunkSize, MapChunkSize);
 
@@ -96,17 +94,21 @@ public class MapGenerator : MonoBehaviour
 
         redistribution = redistribution < 1 ? 1 : redistribution;
 
-        warping1 = warping1 < 0 ? 0 : warping1;
+        if (addDynamicWater) {
+            flattenWaterLevel = false;
+        }
 
-        warping2 = warping2 < 0 ? 0 : warping2;
+        if (flattenWaterLevel) {
+            addDynamicWater = false;
+        }
     }
 
     private void Update() {
-        if (demo) {
+        /*if (demo) {
             offset.x += .1f * Time.deltaTime;
             offset.y += -0.05f * Time.deltaTime;
             GenerateMap();
-        }
+        }*/
     }
 
     [System.Serializable]

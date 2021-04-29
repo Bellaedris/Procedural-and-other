@@ -5,7 +5,7 @@ using UnityEngine;
 public static class NoiseGenerator
 {
     public static float[,] GenerateNoise(int width, int height, int octaves, float persistance, float lacunarity, float scale, Vector2 offset, float redistribution, int seed, 
-                                        bool islandMode, float waterCoefficient, float warping1, float warping2
+                                        bool islandMode, float waterCoefficient
     ) {
         float[,] results = new float[width, height]; 
         float begin = Time.realtimeSinceStartup;
@@ -18,6 +18,7 @@ public static class NoiseGenerator
         gen.SetFractalLacunarity(lacunarity);
         gen.SetFractalOctaves(octaves);
         gen.SetFractalGain(persistance);
+        
 
         //seed to have the possibility to recreate a noisemap
         System.Random randomGenerator = new System.Random(seed);
