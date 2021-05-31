@@ -6,7 +6,7 @@ public class CelestialBody : MonoBehaviour
 {
     #region variables
     public float mass = 1f;
-    public Vector3 initialVelocity = new Vector3(0, 0, 0);
+    public Vector3 initialVelocity;
     public bool staticStar;
     public Color starColor = Color.gray;
     public string name = "Astre";
@@ -18,6 +18,35 @@ public class CelestialBody : MonoBehaviour
     private UIManager uiManager;
     private TrailRenderer trail;
     #endregion
+
+    #region setters
+    public void SetColor(Color color) {
+        this.starColor = color;
+    }
+
+    public void SetMass(float mass) {
+        this.mass = mass;
+    }
+
+    public void SetName(string name) {
+        this.name = name;
+    }
+
+    public void SetStaticStar(bool isStatic) {
+        this.staticStar = isStatic;
+    }
+
+    public void SetPosition(float xCoord, float zCoord) {
+        transform.position = new Vector3(xCoord, 0, zCoord);
+        this.initialPosition = new Vector3(xCoord, 0, zCoord);
+    }
+
+    public void SetInitialVelocity(float xVelocity, float zVelocity) {
+        this.initialVelocity = new Vector3(xVelocity, 0, zVelocity);
+    }
+    #endregion
+
+    #region builtins
 
     private void Awake() {
         MeshRenderer rend = GetComponent<MeshRenderer>();
@@ -58,6 +87,8 @@ public class CelestialBody : MonoBehaviour
     private void OnMouseUp() {
         uiManager.SetSelected(this);
     }
+
+    #endregion
 
     //update the acceleration of the current body based on the forces exerted by the other bodies
     private void UpdateAceleration(CelestialBody other) {

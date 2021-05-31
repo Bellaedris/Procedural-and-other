@@ -35,54 +35,27 @@ public class UIManager : MonoBehaviour
         camera = FindObjectOfType<CameraController>();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
-    public void UpdateX(float newX) {
-        selected.transform.position = new Vector3(newX, 0, selected.transform.position.z);
-        selected.initialPosition = selected.transform.position;
-    }
-
-    public void UpdateZ(float newZ) {
-        selected.transform.position = new Vector3(selected.transform.position.x, 0, newZ);
-        selected.initialPosition = selected.transform.position;
+    //TODO setters pour les valeurs de celestial body (regrouper tout ce qui touche au celestial body dans le meme script)
+    public void UpdatePosition() {
+        Debug.Log("value");
+        selected.SetPosition(posX.value, posZ.value);
     }
 
     public void UpdateStaticStar(bool val) {
-        selected.staticStar = val;
-    }
-
-    public void toggleSimulation() {
-        simulate = !simulate;
-        CelestialBody[] bodies = FindObjectsOfType<CelestialBody>();
-        foreach(CelestialBody body in bodies) {
-            LineRenderer lr = body.GetComponent<LineRenderer>();
-            TrailRenderer trail = body.GetComponent<TrailRenderer>();
-            lr.enabled = false;
-            trail.enabled = simulate? true : false;
-            body.transform.position = body.initialPosition;
-            body.InitializeVelocity();
-        }
+        selected.SetStaticStar(val);
     }
 
     public void UpdateColor() {
-        selected.starColor = cp.color;
+        selected.SetColor(cp.color);
         colorPreview.GetComponent<Image>().color = cp.color;
     }
 
     public void UpdateName() {
-        selected.name = planetName.text;
+        selected.SetName(planetName.text);
     }
 
-    public void UpdateBaseXVelocity(float val) {
-        selected.initialVelocity = new Vector3(val, 0, selected.initialVelocity.z);
-    }
-
-    public void UpdateBaseZVelocity(float val) {
-        selected.initialVelocity = new Vector3(selected.initialVelocity.x, 0, val);
+    public void UpdateBaseVelocity() {
+        selected.SetInitialVelocity(velocityX.value, velocityZ.value);
     }
 
     public void UpdateMass(float val) {
@@ -94,6 +67,20 @@ public class UIManager : MonoBehaviour
             camera.following = selected;
         } else {
             camera.following = null;
+        }
+    }
+
+    //TODO déplacer dans le script celectial simulation?
+    public void toggleSimulation() {
+        simulate = !simulate;
+        CelestialBody[] bodies = FindObjectsOfType<CelestialBody>();
+        foreach(CelestialBody body in bodies) {
+            LineRenderer lr = body.GetComponent<LineRenderer>();
+            TrailRenderer trail = body.GetComponent<TrailRenderer>();
+            lr.enabled = false;
+            trail.enabled = simulate? true : false;
+            body.transform.position = body.initialPosition;
+            body.InitializeVelocity();
         }
     }
 
@@ -111,12 +98,14 @@ public class UIManager : MonoBehaviour
         planetName.text = selected.name;
         staticStar.isOn = selected.staticStar;
         mass.value = selected.mass;
+        Debug.Log(selected.transform.position.z);
         posX.value = selected.transform.position.x;
         posZ.value = selected.transform.position.z;
         velocityX.value = selected.initialVelocity.x;
         velocityZ.value = selected.initialVelocity.z;
         colorPreview.GetComponent<Image>().color = selected.starColor;
         if (cp) cp.gameObject.SetActive(false);
+        Debug.Log( posZ.value);
     }
 
     public void HideWindow() {
@@ -133,5 +122,10 @@ public class UIManager : MonoBehaviour
 
     public void Exit() {
         Application.Quit();
+    }
+
+    //validates that the input string only contains numbers
+    public void ValidateNumber() {
+        
     }
 }
