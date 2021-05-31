@@ -8,7 +8,6 @@ public static class NoiseGenerator
                                         bool islandMode, float waterCoefficient
     ) {
         float[,] results = new float[width, height]; 
-        float begin = Time.realtimeSinceStartup;
 
         FastNoiseLite gen = new FastNoiseLite(seed);
 
@@ -39,7 +38,6 @@ public static class NoiseGenerator
             }
         }
 
-        Debug.Log("time to generate heightmap: " + (Time.realtimeSinceStartup - begin));
         return results;
     }
 

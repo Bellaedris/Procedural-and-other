@@ -5,8 +5,7 @@ using UnityEditor;
 
 public static class MeshGenerator
 {
-    public static Mesh GenerateMesh(float[,] noisemap, float maxHeight, int width, int height, float pointsPerUnit, AnimationCurve flattening, int levelOfDetail) {
-        float begin = Time.realtimeSinceStartup;
+    public static MeshData GenerateMesh(float[,] noisemap, float maxHeight, int width, int height, AnimationCurve flattening, int levelOfDetail) {
         int nx = noisemap.GetLength(1);
         int ny = noisemap.GetLength(0);
 
@@ -22,7 +21,9 @@ public static class MeshGenerator
             //only write the point if he is not at the end of a line (as it would not have a point to its right)
             for (int x = 0; x < nx; x += meshSimplificationIncrement)
             {
-                meshData.vertices[vertexIndex] = new Vector3((float) x / pointsPerUnit, flattening.Evaluate(noisemap[x, y]) * maxHeight, (float) y / pointsPerUnit);
+                lock(flattening) {
+                    meshData.vertices[vertexIndex] = new Vector3((float) x, flattening.Evaluate(noisemap[x, y]) * maxHeight, (float) y);
+                }
                 meshData.uvs[vertexIndex] = new Vector2(x / (float) width, y / (float) height);
 
                 if (x < width - 1 && y > 0) {
@@ -33,7 +34,7 @@ public static class MeshGenerator
             }
         }
 
-        return meshData.CreateMesh();
+        return meshData;
     }
 
     public static Mesh generateWater(int width, int height) {

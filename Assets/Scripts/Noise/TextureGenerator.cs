@@ -5,7 +5,6 @@ using UnityEngine;
 public static class TextureGenerator
 {
     public static Texture2D GenerateColorTexture(float[,] noiseMap, int width, int height, MapGenerator.TerrainType[] biomes) {
-        float begin = Time.realtimeSinceStartup;
         Texture2D texture = new Texture2D(width, height);
         Color[] pixels = new Color[texture.width * texture.height];
         
@@ -25,7 +24,6 @@ public static class TextureGenerator
         texture.Apply();
         //texture.filterMode = FilterMode.Point; 
         //texture.wrapMode = TextureWrapMode.Clamp;
-        Debug.Log("time to generate texture: " + (Time.realtimeSinceStartup - begin));
         return texture;
     }
 
@@ -43,6 +41,14 @@ public static class TextureGenerator
         texture.SetPixels(pixels);
         texture.Apply();
 
+        return texture;
+    }
+
+    public static Texture2D TextureFromColorMap(Color[] colormap, int width, int height) {
+        Texture2D texture = new Texture2D(width, height);
+        texture.SetPixels(colormap);
+        texture.Apply();
+        
         return texture;
     }
 }

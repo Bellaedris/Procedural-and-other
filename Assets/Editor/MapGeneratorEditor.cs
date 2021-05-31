@@ -8,11 +8,11 @@ public class MapGeneratorEditor : Editor {
         
         if (DrawDefaultInspector()) {
             if (generator.autoUpdate) 
-                generator.GenerateMap();
+                generator.GenerateMeshInEditor();
         }
 
         if (GUILayout.Button("Generate")) {
-            generator.GenerateMap();
+            generator.GenerateMeshInEditor();
         }
 
     }

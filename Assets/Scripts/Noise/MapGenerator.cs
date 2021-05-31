@@ -1,8 +1,10 @@
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading;
+using System;
 
-//TODO tiling -> générer plusieurs tuiles de décor
 //TODO mettre en cache des données déjà calculées pour ne pas avoir à les recalculer (par exemple mettre en cache des chunks)
 
 public class MapGenerator : MonoBehaviour
@@ -10,10 +12,9 @@ public class MapGenerator : MonoBehaviour
 
     #region variables
     [Header("Generator parameters")]
-    public int MapChunkSize = 241;
+    public const int MapChunkSize = 241;
     [Range(0,6)]
     public int levelOfDetail;
-    public int pointsPerUnit = 1;
     public float scale = 1.0f;
     public Vector2 offset;
     public int octaves = 1;
@@ -47,27 +48,25 @@ public class MapGenerator : MonoBehaviour
     public bool demo;
     public Renderer renderObject;
     public Mesh defaultMesh;
+
+    private ConcurrentQueue<MapThreadInfo<MapData>> MapDataThreadInfoQueue = new ConcurrentQueue<MapThreadInfo<MapData>>();
+    private ConcurrentQueue<MapThreadInfo<MeshData>> MeshDataThreadInfoQueue = new ConcurrentQueue<MapThreadInfo<MeshData>>();
     #endregion
 
-    public void GenerateMap() {
-        float[,] noisemap = NoiseGenerator.GenerateNoise(MapChunkSize * pointsPerUnit, MapChunkSize * pointsPerUnit, octaves, persistance, lacunarity, scale, offset, redistribution, seed, 
-                                                        islandMode, waterCoefficient);
-
-        Texture2D texture;
-        if (colorMap) {
-            texture = TextureGenerator.GenerateColorTexture(noisemap, MapChunkSize * pointsPerUnit, MapChunkSize * pointsPerUnit, biomes);
-        } else {
-            texture = TextureGenerator.GenerateTexture(noisemap, MapChunkSize * pointsPerUnit, MapChunkSize * pointsPerUnit);
-        }
+    #region customMethods
+    public void GenerateMeshInEditor() {
+        MapData data = GenerateMap();
 
         if (generateMesh) {
             MeshFilter mesh = renderObject.GetComponent<MeshFilter>();
+            MeshData meshData;
             if (flattenWaterLevel)
-                mesh.sharedMesh = MeshGenerator.GenerateMesh(noisemap, maxHeight, MapChunkSize, MapChunkSize, pointsPerUnit, flatWaterlevel, levelOfDetail);
+                meshData = MeshGenerator.GenerateMesh(data.noisemap, maxHeight, MapChunkSize, MapChunkSize, flatWaterlevel, levelOfDetail);
             else
-                mesh.sharedMesh = MeshGenerator.GenerateMesh(noisemap, maxHeight, MapChunkSize, MapChunkSize, pointsPerUnit, AnimationCurve.Linear(0,0,1,1), levelOfDetail);
+                meshData = MeshGenerator.GenerateMesh(data.noisemap, maxHeight, MapChunkSize, MapChunkSize, AnimationCurve.Linear(0,0,1,1), levelOfDetail);
             MeshFilter waterMesh = waterRenderer.GetComponent<MeshFilter>();
             waterMesh.sharedMesh = MeshGenerator.generateWater(MapChunkSize, MapChunkSize);
+            mesh.sharedMesh = meshData.CreateMesh();
 
             waterRenderer.transform.position = renderObject.transform.position + (Vector3.up * (maxHeight * biomes[0].heightThreshold));
         } else {
@@ -81,7 +80,78 @@ public class MapGenerator : MonoBehaviour
             waterRenderer.gameObject.SetActive(false);
         }
 
-        renderObject.sharedMaterial.mainTexture = texture;
+        renderObject.sharedMaterial.mainTexture = TextureGenerator.TextureFromColorMap(data.colormap, MapChunkSize, MapChunkSize);
+    }
+
+    private MapData GenerateMap() {
+        float[,] noisemap = NoiseGenerator.GenerateNoise(MapChunkSize, MapChunkSize, octaves, persistance, lacunarity, scale, offset, redistribution, seed, 
+                                                        islandMode, waterCoefficient);
+
+        Color[] colourmap = new Color[MapChunkSize * MapChunkSize];
+            for(int y = 0; y < noisemap.GetLength(0); y++) {
+                for(int x = 0; x < noisemap.GetLength(1); x++) {
+                    float curHeight = noisemap[x, y];
+                    foreach(MapGenerator.TerrainType biome in biomes) {
+                        if (curHeight <= biome.heightThreshold) {
+                            colourmap[y * MapChunkSize + x] = biome.color; 
+                            break;
+                        }
+                    }
+                }
+        }
+        
+        return new MapData(noisemap, colourmap);
+    }
+
+    public void RequestMapData(Action<MapData> callback) {
+        ThreadStart threadStart = delegate {
+            MapDataThread(callback);
+        };
+        new Thread(threadStart).Start();
+    }
+
+    public void MapDataThread(Action<MapData> callback) {
+        MapData data = GenerateMap();
+        lock (MapDataThreadInfoQueue)
+        {
+            MapDataThreadInfoQueue.Enqueue(new MapThreadInfo<MapData>(callback, data));
+        }
+    }
+
+    public void RequestMeshData(Action<MeshData> callback, MapData mapData) {
+        ThreadStart threadStart = delegate {
+            MeshDataThread(callback, mapData);
+        };
+        new Thread(threadStart).Start();
+    }
+
+    public void MeshDataThread(Action<MeshData> callback, MapData mapData) {
+        MeshData data = MeshGenerator.GenerateMesh(mapData.noisemap, maxHeight, MapChunkSize, MapChunkSize, flatWaterlevel, levelOfDetail);
+        lock (MapDataThreadInfoQueue)
+        {
+            MeshDataThreadInfoQueue.Enqueue(new MapThreadInfo<MeshData>(callback, data));
+        }
+    }
+
+    #endregion
+
+    #region builtins
+
+    private void Update() {
+        if (MapDataThreadInfoQueue.Count > 0) {
+            for(int i = 0; i < MapDataThreadInfoQueue.Count; i++) {
+                MapThreadInfo<MapData> threadInfo;
+                MapDataThreadInfoQueue.TryDequeue(out threadInfo);
+                threadInfo.callback(threadInfo.param);
+            }
+        }
+        if (MeshDataThreadInfoQueue.Count > 0) {
+            for(int i = 0; i < MeshDataThreadInfoQueue.Count; i++) {
+                MapThreadInfo<MeshData> threadInfo;
+                MeshDataThreadInfoQueue.TryDequeue(out threadInfo);
+                threadInfo.callback(threadInfo.param);
+            }
+        }
     }
 
     //checks for incorrect inspector values
@@ -103,18 +173,32 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    private void Update() {
-        /*if (demo) {
-            offset.x += .1f * Time.deltaTime;
-            offset.y += -0.05f * Time.deltaTime;
-            GenerateMap();
-        }*/
-    }
+    #endregion
 
     [System.Serializable]
     public struct TerrainType {
         public string name;
         public float heightThreshold;
         public Color color;
+    }
+
+    public struct MapData {
+        public float[,] noisemap;
+        public Color[] colormap;
+
+        public MapData(float[,] noisemap, Color[] colormap) {
+            this.noisemap = noisemap;
+            this.colormap = colormap;
+        }
+    }
+
+    public struct MapThreadInfo<T> {
+        public Action<T> callback;
+        public T param;
+
+        public MapThreadInfo(Action<T> callback, T param) {
+            this.callback = callback;
+            this.param = param;
+        }
     }
 }
