@@ -8,6 +8,7 @@ public class PlanetGenerator : MonoBehaviour
     #region variables
     public int density = 10;
     public float planetRadius;
+    public GameObject renderObject;
 
     public bool autoUpdate;
 
@@ -17,12 +18,19 @@ public class PlanetGenerator : MonoBehaviour
     #region customMethods
 
     // function found at https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere
-    public void GenerateSphere() {
-        this.points = PlanetMeshGenerator.TestGenerateSphere(density, planetRadius);
+    public void GenerateSpherePoints() {
+        this.points = PlanetMeshGenerator.TestGenerateSpherePoints(density, planetRadius);
     }
 
     public void Projection() {
         this.points = PlanetMeshGenerator.TestProjection(density, planetRadius);
+    }
+
+    public void GenerateSphere() {
+        SphereMeshData meshData = PlanetMeshGenerator.GenerateSphere(density, planetRadius);
+
+        MeshFilter mesh = renderObject.GetComponent<MeshFilter>();
+        mesh.sharedMesh = meshData.CreateMesh();
     }
 
     #endregion
@@ -44,7 +52,6 @@ public class PlanetGenerator : MonoBehaviour
         //draw the points
         if (points.Count <= 0 || !autoUpdate) return;
         foreach(Vector3 point in points) {
-            Debug.Log(point);
             Gizmos.DrawSphere(point, .1f);
         }
     }

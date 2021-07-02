@@ -16,6 +16,10 @@ public class PlanetGeneratorEditor : Editor
             generator.GenerateSphere();
         }
 
+        if (GUILayout.Button("Test points")) {
+            generator.GenerateSpherePoints();
+        }
+
         if (GUILayout.Button("Test projection")) {
             generator.Projection();
         }
