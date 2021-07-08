@@ -12,7 +12,7 @@ public class PlanetMeshGenerator
         DelaunayTriangulation triangulation = new DelaunayTriangulation();
         delaunayCalculator.CalculateTriangulation(StereographicProjection(points), ref triangulation);
 
-        return GenerateMesh(triangulation, points);
+        return GenerateMesh(triangulation, points, planetRadius);
     }
 
     public static List<Vector3> GeneratePoints(float density, float planetRadius) {
@@ -68,13 +68,31 @@ public class PlanetMeshGenerator
         return projectionPoints;
     }
 
+    public static List<Vector3> InverseStereographicProjection(List<Vector2> points, float planetRadius) {
+        List<Vector3> realPoints = new List<Vector3>();
+        foreach(Vector2 point in points) {
+            realPoints.Add(
+                new Vector3(
+                    (point.x * 2) / (1 + point.x * point.x + point.y * point.y),
+                    (point.y * 2) / (1 + point.x * point.x + point.y * point.y),
+                    (-1 + point.x * point.x + + point.y * point.y) / (1 + point.x * point.x + point.y * point.y)
+                ) * planetRadius
+            );
+        }
+
+        return realPoints;
+    }
+
     //generates the mesh from the triangulation
-    public static SphereMeshData GenerateMesh(DelaunayTriangulation triangles, List<Vector3> points) {
+    public static SphereMeshData GenerateMesh(DelaunayTriangulation triangles, List<Vector3> points, float planetRadius) {
         int numTris = triangles.Triangles.Count;
         int numVertices = triangles.Vertices.Count;
         SphereMeshData meshData = new SphereMeshData(numVertices, numTris);
 
-        meshData.vertices = points.ToArray();
+        Debug.Log(triangles.Vertices[0]);
+        Debug.Log(points[0]);
+
+        meshData.vertices = InverseStereographicProjection(triangles.Vertices, planetRadius).ToArray();
 
         for (int triangleIndex = 0; triangleIndex < numTris / 3; triangleIndex++) {
             meshData.AddTriangle(
