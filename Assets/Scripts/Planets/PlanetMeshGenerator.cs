@@ -3,114 +3,131 @@ using System.Collections.Generic;
 using UnityEngine;
 using GK;
 
+// many thanks to https://peter-winslow.medium.com/creating-procedural-planets-in-unity-part-1-df83ecb12e91
+// for the help on the whole sphere gen part
 public class PlanetMeshGenerator
 {
-    public static SphereMeshData GenerateSphere(float density, float planetRadius) {
-        List<Vector3> points = GeneratePoints(density, planetRadius);
-        //triangulate the projection of the points
-        DelaunayCalculator delaunayCalculator = new DelaunayCalculator();
-        DelaunayTriangulation triangulation = new DelaunayTriangulation();
-        delaunayCalculator.CalculateTriangulation(StereographicProjection(points), ref triangulation);
 
-        return GenerateMesh(triangulation, points, planetRadius);
-    }
+    private static List<Triangle> triangles;
+    private static List<Vector3> vertices;
 
-    public static List<Vector3> GeneratePoints(float density, float planetRadius) {
-        List<Vector3> points = new List<Vector3>();
-
-        float phi = Mathf.PI * (3 - Mathf.Sqrt(5)); //golden angle in radians
-        
-        for (int i = 0; i < density; i++) {
-            float y = 1 - (i / (float) (density - 1)) * 2; //y from 1 to -1
-            float radius = Mathf.Sqrt(1 - y * y); // radius at y
-
-            float theta = phi * i; //golden angle increment
-
-            float x = Mathf.Cos(theta) * radius;
-            float z = Mathf.Sin(theta) * radius;
-
-            points.Add(new Vector3(x, y, z) * planetRadius);
-        }
-
-        return points;
-    }
-
-    // projects the points from a sphere to a plane
-    // https://en.wikipedia.org/wiki/Stereographic_projection
-    // and return the new points
-    public static List<Vector2> StereographicProjection(List<Vector3> points) {
-        List<Vector2> projectionPoints = new List<Vector2>();
-        for(int i = 0; i < points.Count; i++) {
-            projectionPoints.Add(
-                new Vector2(
-                    points[i].x / (1 - points[i].z),
-                    points[i].y / (1 - points[i].z)
-                )
-            );
-        }
-
-        return projectionPoints;
-    }
-
-    // projection in 3D space to check the results in the inspector
-    public static List<Vector3> StereographicProjectionDebug(List<Vector3> points) {
-        List<Vector3> projectionPoints = new List<Vector3>();
-        for(int i = 0; i < points.Count; i++) {
-            projectionPoints.Add(
-                new Vector3(
-                    points[i].x / (1 - points[i].z),
-                    0,
-                    points[i].y / (1 - points[i].z)
-                )
-            );
-        }
-
-        return projectionPoints;
-    }
-
-    public static List<Vector3> InverseStereographicProjection(List<Vector2> points, float planetRadius) {
-        List<Vector3> realPoints = new List<Vector3>();
-        foreach(Vector2 point in points) {
-            realPoints.Add(
-                new Vector3(
-                    (point.x * 2) / (1 + point.x * point.x + point.y * point.y),
-                    (point.y * 2) / (1 + point.x * point.x + point.y * point.y),
-                    (-1 + point.x * point.x + + point.y * point.y) / (1 + point.x * point.x + point.y * point.y)
-                ) * planetRadius
-            );
-        }
-
-        return realPoints;
+    public static SphereMeshData GenerateSphere(int subdivisions, float planetRadius) {
+        triangles = new List<Triangle> ();
+        vertices = new List<Vector3> ();
+        generateBaseIcosohedron();
+        Subdivide(subdivisions);
+        return GenerateMesh(triangles, vertices, planetRadius);
     }
 
     //generates the mesh from the triangulation
-    public static SphereMeshData GenerateMesh(DelaunayTriangulation triangles, List<Vector3> points, float planetRadius) {
-        int numTris = triangles.Triangles.Count;
-        int numVertices = triangles.Vertices.Count;
-        SphereMeshData meshData = new SphereMeshData(numVertices, numTris);
+    public static SphereMeshData GenerateMesh(List<Triangle> triangles, List<Vector3> vertices, float planetRadius) {
+        int numTris = triangles.Count;
+        int numVertices = vertices.Count;
+        SphereMeshData meshData = new SphereMeshData(numVertices, numTris * 3);
 
-        Debug.Log(triangles.Vertices[0]);
-        Debug.Log(points[0]);
+        meshData.vertices = vertices.ToArray();
 
-        meshData.vertices = InverseStereographicProjection(triangles.Vertices, planetRadius).ToArray();
-
-        for (int triangleIndex = 0; triangleIndex < numTris / 3; triangleIndex++) {
+        for (int triangleIndex = 0; triangleIndex < numTris; triangleIndex++) {
             meshData.AddTriangle(
-                triangles.Triangles[triangleIndex * 3], 
-                triangles.Triangles[triangleIndex * 3 + 1], 
-                triangles.Triangles[triangleIndex * 3 + 2]
+                triangles[triangleIndex].triangle[0], 
+                triangles[triangleIndex].triangle[1], 
+                triangles[triangleIndex].triangle[2]
             );
         }
 
         return meshData;
     }
 
-    public static List<Vector3> TestGenerateSpherePoints(float density, float planetRadius) {
-        return GeneratePoints(density, planetRadius);
+    // subdivide the base icosahedron n times
+    public static void Subdivide(int iterations) {
+        Dictionary<int, int> midPointCache = new Dictionary<int, int>();
+        for(int i = 0; i < iterations; i++) {
+            List<Triangle> newTriangles = new List<Triangle>();
+            foreach(Triangle triangle in triangles) {
+                int a = triangle.triangle[0];
+                int b = triangle.triangle[1];
+                int c = triangle.triangle[2];
+
+                int ab = GetMidPointIndex(midPointCache, a, b);
+                int bc = GetMidPointIndex(midPointCache, b, c);
+                int ca = GetMidPointIndex(midPointCache, c, a);
+
+                newTriangles.Add(new Triangle(a, ab, ca));
+                newTriangles.Add(new Triangle(b, bc, ab));
+                newTriangles.Add(new Triangle(c, ca, bc));
+                newTriangles.Add(new Triangle(ab, bc, ca));
+            }
+            
+            triangles = newTriangles;
+        }
     }
 
-    public static List<Vector3> TestProjection(float density, float planetRadius) {
-        return StereographicProjectionDebug(GeneratePoints(density, planetRadius) );
+    // https://peter-winslow.medium.com/creating-procedural-planets-in-unity-part-1-df83ecb12e91
+    // get the index of the point in the middle, return int if it already exists
+    public static int GetMidPointIndex(Dictionary<int, int> cache, int a, int b) {
+        int smallerIndex = Mathf.Min (a, b);
+        int greaterIndex = Mathf.Max (a, b);
+        int key = (smallerIndex << 16) + greaterIndex;
+
+        int ret;
+        if (cache.TryGetValue(key, out ret))
+            return ret;
+
+        //if the index has not been stored, compute the midpoint
+        Vector3 midPoint = Vector3.Lerp(vertices[a], vertices[b], 0.5f).normalized;
+        vertices.Add(midPoint);
+        ret = vertices.Count - 1;
+
+        cache.Add(key, ret);
+        return ret;
+    }
+
+    // generate basic icosahedron
+    // https://peter-winslow.medium.com/creating-procedural-planets-in-unity-part-1-df83ecb12e91
+    public static void generateBaseIcosohedron() {
+
+        // An icosahedron has 12 vertices, and
+        // since it's completely symmetrical the
+        // formula for calculating them is kind of
+        // symmetrical too:
+ 
+        float t = (1.0f + Mathf.Sqrt (5.0f)) / 2.0f;
+
+        vertices.Add (new Vector3 (-1, t, 0).normalized);
+        vertices.Add (new Vector3 (1, t, 0).normalized);
+        vertices.Add (new Vector3 (-1, -t, 0).normalized);
+        vertices.Add (new Vector3 (1, -t, 0).normalized);
+        vertices.Add (new Vector3 (0, -1, t).normalized);
+        vertices.Add (new Vector3 (0, 1, t).normalized);
+        vertices.Add (new Vector3 (0, -1, -t).normalized);
+        vertices.Add (new Vector3 (0, 1, -t).normalized);
+        vertices.Add (new Vector3 (t, 0, -1).normalized);
+        vertices.Add (new Vector3 (t, 0, 1).normalized);
+        vertices.Add (new Vector3 (-t, 0, -1).normalized);
+        vertices.Add (new Vector3 (-t, 0, 1).normalized);
+
+        // And here's the formula for the 20 sides,
+        // referencing the 12 vertices we just created.        
+        triangles.Add (new Triangle(0, 11, 5));
+        triangles.Add (new Triangle(0, 5, 1));
+        triangles.Add (new Triangle(0, 1, 7));
+        triangles.Add (new Triangle(0, 7, 10));
+        triangles.Add (new Triangle(0, 10, 11));
+        triangles.Add (new Triangle(1, 5, 9));
+        triangles.Add (new Triangle(5, 11, 4));
+        triangles.Add (new Triangle(11, 10, 2));
+        triangles.Add (new Triangle(10, 7, 6));
+        triangles.Add (new Triangle(7, 1, 8));
+        triangles.Add (new Triangle(3, 9, 4));
+        triangles.Add (new Triangle(3, 4, 2));
+        triangles.Add (new Triangle(3, 2, 6));
+        triangles.Add (new Triangle(3, 6, 8));
+        triangles.Add (new Triangle(3, 8, 9));
+        triangles.Add (new Triangle(4, 9, 5));
+        triangles.Add (new Triangle(2, 4, 11));
+        triangles.Add (new Triangle(6, 2, 10));
+        triangles.Add (new Triangle(8, 6, 7));
+        triangles.Add (new Triangle(9, 8, 1));
     }
 }
 
@@ -137,11 +154,21 @@ public struct SphereMeshData {
 
     public Mesh CreateMesh() {
         Mesh mesh = new Mesh();
+        for(int i = 0; i < triangles.Length; i++) {
+            Debug.Log(triangles[i]);
+        }
         mesh.vertices = vertices;
         mesh.triangles = triangles;
         mesh.uv = uvs;
         mesh.RecalculateNormals();
 
         return mesh;
+    }
+}
+public struct Triangle {
+    public List<int> triangle;
+
+    public Triangle(int a, int b, int c) {
+        triangle = new List<int>() {a, b, c};
     }
 }
