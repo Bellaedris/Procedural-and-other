@@ -25,6 +25,11 @@ public class PlanetMeshGenerator
         int numVertices = vertices.Count;
         SphereMeshData meshData = new SphereMeshData(numVertices, numTris * 3);
 
+        //apply the planet radius
+        for(int i = 0; i < vertices.Count; i++) {
+            vertices[i] *= planetRadius;
+        }
+
         meshData.vertices = vertices.ToArray();
 
         for (int triangleIndex = 0; triangleIndex < numTris; triangleIndex++) {
@@ -154,9 +159,6 @@ public struct SphereMeshData {
 
     public Mesh CreateMesh() {
         Mesh mesh = new Mesh();
-        for(int i = 0; i < triangles.Length; i++) {
-            Debug.Log(triangles[i]);
-        }
         mesh.vertices = vertices;
         mesh.triangles = triangles;
         mesh.uv = uvs;
@@ -165,6 +167,7 @@ public struct SphereMeshData {
         return mesh;
     }
 }
+
 public struct Triangle {
     public List<int> triangle;
 

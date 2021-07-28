@@ -28,7 +28,7 @@ public static class NoiseGenerator
 
         for (float y = 0; y < width; y++) {
             for (float x = 0; x < height; x++) {
-                float noiseValue = gen.GetNoise(x * scale + offsetX+ offset.x, y * scale + offsetY + offset.y, 0) * 0.5f + 0.5f;
+                float noiseValue = gen.GetNoise(x * scale + offsetX + offset.x, y * scale + offsetY + offset.y, 0) * 0.5f + 0.5f;
                 //redistribution to allow creation of flat areas if need be
                 float finalValue = Mathf.Pow(noiseValue, redistribution);
                 //create an island shape by lowering noise value the further you are from the middle of the map

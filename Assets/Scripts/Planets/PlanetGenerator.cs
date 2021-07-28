@@ -8,6 +8,17 @@ public class PlanetGenerator : MonoBehaviour
     #region variables
     public int subdivisions = 2;
     public float planetRadius;
+    [Space(10)]
+    [Header("Noise Parameters")]
+    public float maxHeight;
+    public int seed;
+    public float scale = 1.0f;
+    public int octaves = 1;
+    [Range(0,1)]
+    public float persistance = 1f;
+    public float lacunarity = 1f;
+    public float warpAmplitude = 0f;
+
     public GameObject renderObject;
 
     public bool autoUpdate;
@@ -19,7 +30,8 @@ public class PlanetGenerator : MonoBehaviour
         SphereMeshData meshData = PlanetMeshGenerator.GenerateSphere(subdivisions, planetRadius);
 
         MeshFilter mesh = renderObject.GetComponent<MeshFilter>();
-        mesh.sharedMesh = meshData.CreateMesh();
+        Mesh planetMesh = meshData.CreateMesh();
+        mesh.sharedMesh = PlanetLandscapeGenerator.generateNoise(planetMesh, maxHeight, seed, scale, lacunarity, persistance, octaves, warpAmplitude);
     }
 
     #endregion
@@ -28,7 +40,7 @@ public class PlanetGenerator : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Gizmos.color = Color.red;
+        
     }
 
     // Update is called once per frame
@@ -41,6 +53,12 @@ public class PlanetGenerator : MonoBehaviour
         if (subdivisions > 6 || subdivisions < 0) {
             subdivisions = 0;
         }
+
+        scale = scale < 0 ? 0 : scale;
+
+        octaves = octaves < 1 ? 1 : octaves;
+
+        lacunarity = lacunarity < 1 ? 1 : lacunarity;
     }
     
     #endregion
