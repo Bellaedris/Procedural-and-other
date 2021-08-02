@@ -18,6 +18,18 @@ public class PlanetGenerator : MonoBehaviour
     public float persistance = 1f;
     public float lacunarity = 1f;
     public float warpAmplitude = 0f;
+    [Space(10)]
+    [Header("Craters Parameters")]
+    [Tooltip("number of craters")]
+    public int craterDensity = 0;
+    [Tooltip("width of the outer rim of the crater")]
+    public float rimWidth = .5f;
+    [Tooltip("level of the flat floor of the crater")]
+    public float rimHeight = -.8f;
+    [Tooltip("steepness of the crater/rim junction")]
+    public float rimSteepness = .2f;
+    [Tooltip("maximal radius of the crater")]
+    public float maxRadius = 1f;
 
     public GameObject renderObject;
 
@@ -27,11 +39,18 @@ public class PlanetGenerator : MonoBehaviour
     #region customMethods
 
     public void GenerateSphere() {
+        System.Diagnostics.Stopwatch time = new System.Diagnostics.Stopwatch ();
+        time.Start ();
         SphereMeshData meshData = PlanetMeshGenerator.GenerateSphere(subdivisions, planetRadius);
 
         MeshFilter mesh = renderObject.GetComponent<MeshFilter>();
         Mesh planetMesh = meshData.CreateMesh();
-        mesh.sharedMesh = PlanetLandscapeGenerator.generateNoise(planetMesh, maxHeight, seed, scale, lacunarity, persistance, octaves, warpAmplitude);
+        planetMesh = PlanetLandscapeGenerator.generateNoise(planetMesh, maxHeight, seed, scale, lacunarity, persistance, octaves, warpAmplitude);
+        planetMesh = PlanetLandscapeGenerator.generateCraters(planetMesh, craterDensity, rimWidth, rimHeight, rimSteepness, maxRadius);
+
+        mesh.sharedMesh = planetMesh;
+        time.Stop ();
+        print("carried out " + time.Elapsed.TotalSeconds + " second");
     }
 
     #endregion

@@ -49,4 +49,51 @@ public class PlanetLandscapeGenerator
 
         return meshData;
     }
+
+    public static Mesh generateCraters(Mesh meshData, int craterDensity, float rimWidth, float rimHeight, float rimSteepness, float maxRadius) {
+        Vector3[] vertices = meshData.vertices;
+        CraterData[] craterDatas = new CraterData[craterDensity];
+
+        // for each crater, creates and stores a centerpoint and a radius
+        for(int i = 0; i < craterDensity; i++) {
+            craterDatas[i] = new CraterData(
+                meshData.vertices[Random.Range(0, meshData.vertices.Length)], 
+                Random.Range(1, maxRadius)
+            );
+        }
+
+        for(int i = 0; i < meshData.vertices.Length; i++) {
+            float craterHeight = 0;
+            for (int c = 0; c < craterDensity; c++) {
+                // get an x coordinate between -1 and 1
+                float x = Vector3.Distance(meshData.vertices[i], craterDatas[c].center) / craterDatas[c].radius;
+
+                //three functions that gives a rough crater shape
+                float crater = x * x - 1;
+                float rim = Mathf.Min(x - 1 - rimWidth, 0);
+                float rimFinal = rim * rim * rimSteepness;
+
+                //combine the functions
+                float craterValue = Mathf.Max(crater, rimHeight);
+                craterValue = Mathf.Min(craterValue, rimFinal);
+                craterHeight += craterValue * craterDatas[c].radius;
+            }
+
+            vertices[i] += meshData.normals[i] * craterHeight;
+        }
+
+        meshData.vertices = vertices;
+        meshData.RecalculateNormals();
+        return meshData;
+    }
+}
+
+public struct CraterData {
+    public Vector3 center;
+    public float radius;
+
+    public CraterData(Vector3 center, float radius) {
+        this.center = center;
+        this.radius = radius;
+    }
 }
