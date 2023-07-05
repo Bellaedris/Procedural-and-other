@@ -1,7 +1,7 @@
 # Procedural-and-other
 Unity project playing with procedural generation, gravity and why not both at the same time? 
 
-Includes a small GUI to place planets and watch them as their gravities interract, and a few tools to generate terrains and planets. 
+Includes a small GUI to place planets and watch them as their gravities interract(demo [here](https://youtu.be/uSEKeLhGtuA)), and a few tools to generate terrains and planets. 
 
 # Requirements 
 Unity 2020.3
